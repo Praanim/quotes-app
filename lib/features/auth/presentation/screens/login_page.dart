@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:qoute_app/common/colors.dart';
+import 'package:qoute_app/features/auth/data/services/userSessionCubit/user_session_cubit.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -23,83 +25,102 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
-    return Scaffold(
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              Image.asset(
-                _imageUrl,
-                height: size.height * 0.35,
-                width: size.width,
+    return BlocListener<UserSessionCubit, UserSessionState>(
+      listener: (context, state) {
+        if (state is SessionActive) {
+          Navigator.of(context).push(MaterialPageRoute(
+            builder: (context) => const Scaffold(
+              body: Center(
+                child: Text("Hello world"),
               ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Column(
-                  children: [
-                    RichText(
-                      text: TextSpan(
-                          text: "Welcome ",
-                          style: Theme.of(context)
-                              .textTheme
-                              .headlineLarge!
-                              .copyWith(color: AppColors.secondaryAppColor),
-                          children: [
-                            TextSpan(
-                                text: "Back!",
-                                style:
-                                    Theme.of(context).textTheme.headlineLarge)
-                          ]),
-                    ),
-                    const Text("Login",
-                        style: TextStyle(
-                            color: AppColors.secondaryAppColor,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 40)),
-                    const SizedBox(
-                      height: 10,
-                    ),
-                    CustomTextField(
-                      fieldController: _emailController,
-                      hintText: "Email",
-                      leadingIcon: const Icon(
-                        Icons.person,
-                        color: AppColors.mainAppColor,
-                      ),
-                    ),
-                    const SizedBox(
-                      height: 16,
-                    ),
-                    CustomTextField(
-                      fieldController: _passwordController,
-                      hintText: "Password",
-                      leadingIcon: const Icon(
-                        Icons.lock,
-                        color: AppColors.mainAppColor,
-                      ),
-                    ),
-                    const SizedBox(
-                      height: 16,
-                    ),
-                    ElevatedButton.icon(
-                        style: ElevatedButton.styleFrom(
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10)),
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 16, vertical: 8),
-                            textStyle: const TextStyle(fontSize: 20),
-                            backgroundColor: AppColors.mainAppColor),
-                        onPressed: () {
-                          //login feature to be added
-                        },
-                        icon: const Icon(Icons.login),
-                        label: const Text(
-                          "Login",
-                        ))
-                  ],
+            ),
+          ));
+        } else if (state is SessionError) {
+          ScaffoldMessenger.of(context)
+              .showSnackBar(SnackBar(content: Text(state.failure.message)));
+        }
+      },
+      child: Scaffold(
+        body: SafeArea(
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
+                Image.asset(
+                  _imageUrl,
+                  height: size.height * 0.35,
+                  width: size.width,
                 ),
-              ),
-            ],
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Column(
+                    children: [
+                      RichText(
+                        text: TextSpan(
+                            text: "Welcome ",
+                            style: Theme.of(context)
+                                .textTheme
+                                .headlineLarge!
+                                .copyWith(color: AppColors.secondaryAppColor),
+                            children: [
+                              TextSpan(
+                                  text: "Back!",
+                                  style:
+                                      Theme.of(context).textTheme.headlineLarge)
+                            ]),
+                      ),
+                      const Text("Login",
+                          style: TextStyle(
+                              color: AppColors.secondaryAppColor,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 40)),
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      CustomTextField(
+                        fieldController: _emailController,
+                        hintText: "Email",
+                        leadingIcon: const Icon(
+                          Icons.person,
+                          color: AppColors.mainAppColor,
+                        ),
+                      ),
+                      const SizedBox(
+                        height: 16,
+                      ),
+                      CustomTextField(
+                        fieldController: _passwordController,
+                        hintText: "Password",
+                        leadingIcon: const Icon(
+                          Icons.lock,
+                          color: AppColors.mainAppColor,
+                        ),
+                      ),
+                      const SizedBox(
+                        height: 16,
+                      ),
+                      ElevatedButton.icon(
+                          style: ElevatedButton.styleFrom(
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10)),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 16, vertical: 8),
+                              textStyle: const TextStyle(fontSize: 20),
+                              backgroundColor: AppColors.mainAppColor),
+                          onPressed: () {
+                            //login feature to be added
+                            context.read<UserSessionCubit>().login(
+                                email: _emailController.text.trim(),
+                                password: _passwordController.text);
+                          },
+                          icon: const Icon(Icons.login),
+                          label: const Text(
+                            "Login",
+                          ))
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
